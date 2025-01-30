@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Echo Journal</string>
+    <string name="title_app_bar_entries">Your EchoJournal</string>
+    <string name="title_empty_entries">No Entries</string>
+    <string name="description_empty_entries">Start recording your first Echo </string>
+    <string name="title_app_bar_settings">Settings</string>
+</resources>
