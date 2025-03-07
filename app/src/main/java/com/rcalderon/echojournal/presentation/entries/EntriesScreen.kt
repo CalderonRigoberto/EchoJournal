@@ -23,9 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.rcalderon.echojournal.R
 import com.rcalderon.echojournal.core.ui.theme.PrimaryContainer
 import com.rcalderon.echojournal.core.ui.theme.Surface
-import com.rcalderon.echojournal.presentation.components.EntriesEmptyState
-import com.rcalderon.echojournal.presentation.components.FilterEntriesChip
-import com.rcalderon.echojournal.presentation.enums.Mood
+import com.rcalderon.echojournal.presentation.components.EntrieContent
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,17 +69,10 @@ fun EntriesScreen(
             Row(
                 modifier = Modifier.padding(horizontal = 10.dp)
             ) {
-                FilterEntriesChip(
-                    modifier,
-                    onClearFilters = {
 
-                    },
-                    onMoodSelected = {
-                        Log.d("onMoodSelected", "EntriesScreen: ${it.toString()}")
-                    }
-                )
             }
-            EntriesEmptyState()
+            EntrieContent()
+            // EntriesEmptyState()
         }
     }
 }
