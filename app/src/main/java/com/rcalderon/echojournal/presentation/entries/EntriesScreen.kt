@@ -1,6 +1,7 @@
 package com.rcalderon.echojournal.presentation.entries
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,16 +14,19 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rcalderon.echojournal.R
-import com.rcalderon.echojournal.core.ui.theme.PrimaryContainer
-import com.rcalderon.echojournal.core.ui.theme.Surface
+import com.rcalderon.echojournal.core.ui.theme.Primary100
+import com.rcalderon.echojournal.core.ui.theme.Primary50
 import com.rcalderon.echojournal.presentation.components.EntrieContent
 
 
@@ -48,24 +52,31 @@ fun EntriesScreen(
                             contentDescription = "Settings description"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             )
         },
         floatingActionButton = {
             FloatingActionButton (
                 onClick = {},
                 shape = CircleShape,
-                containerColor = PrimaryContainer
+                containerColor = Primary50
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Add,
-                    tint = Surface,
+                    tint = Primary100,
                     contentDescription = "Initialize to add new entry"
                 )
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(paddingValues)
+        ) {
             Row(
                 modifier = Modifier.padding(horizontal = 10.dp)
             ) {

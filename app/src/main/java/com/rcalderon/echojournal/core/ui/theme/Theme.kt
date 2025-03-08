@@ -13,13 +13,23 @@ import androidx.compose.ui.unit.dp
 
 
 private val LightColorScheme = lightColorScheme(
-    primary = Blue500,
-    primaryContainer = PrimaryContainer,
-    inverseSurface = InverseSurface,
-    surfaceTint = SurfaceTint,
-    surface = Surface,
-    errorContainer = ErrorContainer,
-    onErrorContainer = OnErrorContainer,
+    surface = Primary100,
+    inverseOnSurface = Secondary95,
+    onSurface = NeutralVariant10,
+    onSurfaceVariant = NeutralVariant30,
+    outline = NeutralVariant50,
+    outlineVariant = NeutralVariant80,
+    primary = Primary30,
+    primaryContainer = Primary50,
+    onPrimary = Primary100,
+    inversePrimary = Secondary80,
+    secondary = Secondary30,
+    secondaryContainer = Secondary50,
+    surfaceTint = SurfaceTint12,
+    background = NeutralVariant99,
+    onErrorContainer = Error20,
+    errorContainer = Error95,
+    onError = Error100,
 )
 
 @Composable
