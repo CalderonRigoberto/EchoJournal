@@ -6,7 +6,7 @@ import com.rcalderon.echojournal.presentation.enums.Mood
 data class EntryUiModel(
     val title: String,
     val description: String?,
-    val topics: List<TopicUiModel>,
+    val topics: List<TopicUiModel>?,
     val source: Uri,
     val createdAt: String,
     val mood: Mood = Mood.Neutral

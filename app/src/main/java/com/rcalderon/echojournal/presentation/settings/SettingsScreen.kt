@@ -42,11 +42,11 @@ fun SettingsScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) { paddingValues ->
         Box(
             modifier = modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {

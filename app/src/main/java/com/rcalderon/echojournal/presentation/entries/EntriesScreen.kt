@@ -70,11 +70,11 @@ fun EntriesScreen(
                     contentDescription = "Initialize to add new entry"
                 )
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) { paddingValues ->
         Box(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(paddingValues)
         ) {
             Row(

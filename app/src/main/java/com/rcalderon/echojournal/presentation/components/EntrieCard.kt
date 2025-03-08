@@ -198,24 +198,26 @@ private fun EntryCard(
             }
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(2.5.dp),
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .height(20.dp)
-                .fillMaxWidth()
-        ) {
-            entryUiModel.topics.forEachIndexed { _, topic ->
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-                ) {
-                    Text(
-                        text = "# ${topic.topic}",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(horizontal = 5.dp)
-                    )
+        if(!entryUiModel.topics.isNullOrEmpty()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.5.dp),
+                modifier = Modifier
+                    .padding(horizontal = 10.dp, vertical = if(entryUiModel.description.isNullOrEmpty()) 5.dp else 0.dp)
+                    .height(20.dp)
+                    .fillMaxWidth()
+            ) {
+                entryUiModel.topics.forEachIndexed { _, topic ->
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
+                    ) {
+                        Text(
+                            text = "# ${topic.topic}",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(horizontal = 5.dp)
+                        )
+                    }
                 }
             }
         }
@@ -296,7 +298,7 @@ fun ExpandableText(
 val _fakeEntries = listOf(
     EntryUiModel(
         title = "Aprendiendo Kotlin",
-        description = "Explorando las características del lenguaje Kotlin.",
+        description = null,
         topics = listOf(TopicUiModel("Programación"), TopicUiModel("Kotlin")),
         source = "https://developer.android.com/kotlin".toUri(),
         createdAt = "10:00",
@@ -305,7 +307,7 @@ val _fakeEntries = listOf(
     EntryUiModel(
         title = "Cómo usar Jetpack Compose",
         description = "Jetpack Compose facilita la construcción de interfaces modernas en Android.",
-        topics = listOf(TopicUiModel("Android"), TopicUiModel("Jetpack Compose")),
+        topics = null,
         source = "https://developer.android.com/jetpack/compose".toUri(),
         createdAt = "15:30",
         mood = Mood.Sad
