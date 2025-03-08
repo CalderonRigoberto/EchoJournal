@@ -1,26 +1,27 @@
 package com.rcalderon.echojournal.presentation.components
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -37,8 +39,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -48,30 +50,76 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.rcalderon.echojournal.R
+import com.rcalderon.echojournal.core.data.model.EntryUiModel
+import com.rcalderon.echojournal.core.data.model.TopicUiModel
+import com.rcalderon.echojournal.presentation.enums.Mood
+import androidx.core.net.toUri
 
-enum class NodePosition {
-    FIRST,
-    MIDDLE,
-    LAST
-}
 
 @Composable
 fun EntrieContent(
-    nodePosition: NodePosition = NodePosition.FIRST
+    entries: List<EntryUiModel> = emptyList()
+) {
+    LazyColumn {
+        itemsIndexed(_fakeEntries) { index, entryUiModel ->
+            EntrieContent(
+                entryUiModel = entryUiModel,
+                isFirstItem = index == 0,
+                isLastItem = index != 3,
+                isAudioOnPlayback = true,
+                onPlay = {}
+            )
+        }
+
+    }
+}
+
+
+@Composable
+fun EntrieContent(
+    entryUiModel: EntryUiModel,
+    onPlay: () -> Unit,
+    isFirstItem: Boolean,
+    isLastItem: Boolean,
+    isAudioOnPlayback: Boolean = false,
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
+        modifier = Modifier
+            .height(intrinsicSize = IntrinsicSize.Min)
+            .padding(horizontal = 5.dp),
     ) {
-        // TODO Añadir logica para timeline
-        EntrieContentCard()
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(top = if (isFirstItem) 10.dp else 0.dp)
+        ) {
+            Image(
+                imageVector = entryUiModel.mood.img,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp)
+            )
+            if (isLastItem) VerticalDivider(
+                modifier = Modifier.fillMaxHeight()
+            )
+        }
+
+        EntryCard(
+            entryUiModel = entryUiModel,
+            isAudioOnPlayback = isAudioOnPlayback,
+            onPlay = onPlay
+        )
     }
 
 }
 
-
-
 @Composable
-fun EntrieContentCard() {
+private fun EntryCard(
+    entryUiModel: EntryUiModel,
+    isAudioOnPlayback: Boolean = false,
+    onPlay: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -83,8 +131,8 @@ fun EntrieContentCard() {
                 .fillMaxWidth()
                 .padding(10.dp)
         ) {
-            Text(text = "My Entry", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "17:30", style = MaterialTheme.typography.labelLarge)
+            Text(text = entryUiModel.title, style = MaterialTheme.typography.bodyLarge)
+            Text(text = entryUiModel.createdAt, style = MaterialTheme.typography.labelLarge)
         }
         Box(
             modifier = Modifier
@@ -99,7 +147,7 @@ fun EntrieContentCard() {
                     .padding(5.dp)
             ) {
                 ElevatedButton(
-                    onClick = {},
+                    onClick =  onPlay,
                     shape = CircleShape,
                     modifier = Modifier
                         .size(30.dp)
@@ -107,7 +155,8 @@ fun EntrieContentCard() {
                     contentPadding = PaddingValues(0.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.PlayArrow,
+                        painter = if(!isAudioOnPlayback) painterResource(R.drawable.ic_play)
+                        else painterResource(R.drawable.ic_pause),
                         contentDescription = null,
                         modifier = Modifier.size(34.dp)
                     )
@@ -125,34 +174,40 @@ fun EntrieContentCard() {
 
                 )
                 Spacer(modifier = Modifier.width(2.dp))
+                // TODO El estado de reporduccion debe verse aqui
                 Text(text = "7:05/12:30", style = MaterialTheme.typography.bodySmall)
             }
         }
-        Box(
-            modifier = Modifier
-                .padding(10.dp)
-                .clip(RoundedCornerShape(4.dp))
-        ) {
-            ExpandableText(
-                modifier = Modifier.padding(2.5.dp),
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-            )
+
+        if(entryUiModel.description != null) {
+            Box(
+                modifier = Modifier
+                    .padding(10.dp)
+                    .clip(RoundedCornerShape(4.dp))
+            ) {
+                ExpandableText(
+                    modifier = Modifier.padding(2.5.dp),
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    text = entryUiModel.description,
+                )
+            }
         }
 
         Row(
-            modifier = Modifier.padding(10.dp)
-        ){
-            repeat(3) {
-                Spacer(modifier = Modifier.width(2.5.dp))
+            horizontalArrangement = Arrangement.spacedBy(2.5.dp),
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .height(20.dp)
+                .fillMaxWidth()
+        ) {
+            entryUiModel.topics.forEachIndexed { _, topic ->
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-
                 ) {
                     Text(
-                        text = "# Work",
+                        text = "# ${topic.topic}",
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(horizontal = 5.dp)
                     )
@@ -231,3 +286,39 @@ fun ExpandableText(
     }
 }
 
+
+
+val _fakeEntries = listOf(
+    EntryUiModel(
+        title = "Aprendiendo Kotlin",
+        description = "Explorando las características del lenguaje Kotlin.",
+        topics = listOf(TopicUiModel("Programación"), TopicUiModel("Kotlin")),
+        source = "https://developer.android.com/kotlin".toUri(),
+        createdAt = "10:00",
+        mood = Mood.Excited
+    ),
+    EntryUiModel(
+        title = "Cómo usar Jetpack Compose",
+        description = "Jetpack Compose facilita la construcción de interfaces modernas en Android.",
+        topics = listOf(TopicUiModel("Android"), TopicUiModel("Jetpack Compose")),
+        source = "https://developer.android.com/jetpack/compose".toUri(),
+        createdAt = "15:30",
+        mood = Mood.Sad
+    ),
+    EntryUiModel(
+        title = "Introducción a Kafka",
+        description = "Conceptos básicos sobre mensajería en Kafka.",
+        topics = listOf(TopicUiModel("Mensajería"), TopicUiModel("Kafka")),
+        source = "https://kafka.apache.org/documentation/".toUri(),
+        createdAt = "09:45",
+        mood = Mood.Neutral
+    ),
+    EntryUiModel(
+        title = "Dockerizando aplicaciones",
+        description = "Pasos para contenedorización con Docker.",
+        topics = listOf(TopicUiModel("DevOps"), TopicUiModel("Docker")),
+        source = "https://docs.docker.com/get-started/".toUri(),
+        createdAt = "18:10",
+        mood = Mood.Sad
+    )
+)
