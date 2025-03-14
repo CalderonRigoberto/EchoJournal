@@ -1,6 +1,11 @@
 package com.rcalderon.echojournal.presentation.entries.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseInBounce
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -57,38 +63,36 @@ import com.rcalderon.echojournal.core.data.model.EntryUiModel
 import com.rcalderon.echojournal.core.data.model.TopicUiModel
 import com.rcalderon.echojournal.presentation.enums.Mood
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.rcalderon.echojournal.presentation.entries.EntriesScreenEvents
+import com.rcalderon.echojournal.presentation.entries.EntriesScreenState
+import com.rcalderon.echojournal.presentation.entries.EntriesViewModel
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntryContent(
-    entries: List<EntryUiModel> = emptyList()
+    entriesViewModel: EntriesViewModel = hiltViewModel()
 ) {
+    val state by entriesViewModel.state.collectAsStateWithLifecycle()
+    val playbackTimeState by entriesViewModel.playbackTimeState.collectAsStateWithLifecycle()
+    val playbackFormattedTimeState by entriesViewModel.playbackFormattedTimeState.collectAsStateWithLifecycle()
     LazyColumn {
-        // TODO Change by agrouping data
-        repeat(5) {
-            stickyHeader {
-                Text(
-                    text = "TODAY",
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier
-                        .padding(top = 12.dp, start = 10.dp)
-                        .fillMaxWidth()
-
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(10.dp))
-            }
-            itemsIndexed(_fakeEntries) { index, entryUiModel ->
-                EntryContent(
-                    entryUiModel = entryUiModel,
-                    isFirstItem = index == 0,
-                    isLastItem = index != 3,
-                    isAudioOnPlayback = true,
-                    onPlay = {}
-                )
-            }
+        itemsIndexed(state.entries) { index, entryUiModel ->
+            EntryContent(
+                entryUiModel = entryUiModel,
+                isFirstItem = index == 0,
+                isLastItem = index == state.entries.size - 1,
+                isAudioOnPlayback = state.isPlaying,
+                currentPosition = if(state.isPlaying && playbackTimeState != null) playbackTimeState!! else 0f,
+                currentPositionFormated = playbackFormattedTimeState,
+                onPlay = {
+                    entriesViewModel.onEvent(
+                        EntriesScreenEvents.PLayAudio(entryUiModel.source)
+                    )
+                }
+            )
         }
     }
 }
@@ -101,6 +105,8 @@ fun EntryContent(
     isFirstItem: Boolean,
     isLastItem: Boolean,
     isAudioOnPlayback: Boolean = false,
+    currentPositionFormated: String = "0:00",
+    currentPosition: Float = 0f
 ) {
     Row(
         modifier = Modifier
@@ -111,11 +117,12 @@ fun EntryContent(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = if(isFirstItem) Modifier.padding(top = 20.dp) else Modifier.padding(top = 0.dp )
         ) {
             Box (
              contentAlignment = Alignment.TopCenter,
             ){
-                if (isLastItem) {
+                if (!isLastItem) {
                     VerticalDivider(
                         modifier = Modifier.fillMaxHeight()
                     )
@@ -130,6 +137,8 @@ fun EntryContent(
         EntryCard(
             entryUiModel = entryUiModel,
             isAudioOnPlayback = isAudioOnPlayback,
+            currentPosition = currentPosition,
+            currentPositionFormated = currentPositionFormated,
             onPlay = onPlay
         )
     }
@@ -139,6 +148,8 @@ fun EntryContent(
 private fun EntryCard(
     entryUiModel: EntryUiModel,
     isAudioOnPlayback: Boolean = false,
+    currentPosition: Float,
+    currentPositionFormated: String,
     onPlay: () -> Unit
 ) {
     Card(
@@ -162,6 +173,8 @@ private fun EntryCard(
         AudioPlayer(
             entryUiModel = entryUiModel,
             isAudioOnPlayback = isAudioOnPlayback,
+            currentPosition = currentPosition,
+            currentPositionFormated = currentPositionFormated,
             onPlay = onPlay
         )
 
@@ -209,8 +222,19 @@ private fun EntryCard(
 fun AudioPlayer(
     entryUiModel: EntryUiModel,
     isAudioOnPlayback: Boolean = false,
+    currentPosition: Float,
+    currentPositionFormated: String,
     onPlay: () -> Unit
 ) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = currentPosition,
+        animationSpec = tween(
+            durationMillis = 300,
+            easing = FastOutLinearInEasing
+        ),
+        label = "progress"
+    )
+
     Box(
         modifier = Modifier
             .padding(horizontal = 10.dp)
@@ -240,9 +264,7 @@ fun AudioPlayer(
             }
             Spacer(modifier = Modifier.width(2.dp))
             LinearProgressIndicator(
-                progress = {
-                    .50f
-                },
+                progress = { animatedProgress },
                 color =  entryUiModel.mood.colors[0],
                 trackColor = entryUiModel.mood.colors[2],
                 modifier = Modifier
@@ -252,8 +274,7 @@ fun AudioPlayer(
 
             )
             Spacer(modifier = Modifier.width(2.dp))
-            // TODO El estado de reporduccion debe verse aqui
-            Text(text = "7:05/12:30", style = MaterialTheme.typography.bodySmall)
+            Text(text = "$currentPositionFormated / ", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -334,32 +355,8 @@ val _fakeEntries = listOf(
         title = "Aprendiendo Kotlin",
         description = null,
         topics = listOf(TopicUiModel("Programación"), TopicUiModel("Kotlin")),
-        source = "https://developer.android.com/kotlin".toUri(),
+        source = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3".toUri(),
         createdAt = "10:00",
         mood = Mood.Excited
-    ),
-    EntryUiModel(
-        title = "Cómo usar Jetpack Compose",
-        description = "Jetpack Compose facilita la construcción de interfaces modernas en Android.",
-        topics = null,
-        source = "https://developer.android.com/jetpack/compose".toUri(),
-        createdAt = "15:30",
-        mood = Mood.Sad
-    ),
-    EntryUiModel(
-        title = "Introducción a Kafka",
-        description = "Conceptos básicos sobre mensajería en Kafka.",
-        topics = listOf(TopicUiModel("Mensajería"), TopicUiModel("Kafka")),
-        source = "https://kafka.apache.org/documentation/".toUri(),
-        createdAt = "09:45",
-        mood = Mood.Neutral
-    ),
-    EntryUiModel(
-        title = "Dockerizando aplicaciones",
-        description = "Pasos para contenedorización con Docker.",
-        topics = listOf(TopicUiModel("DevOps"), TopicUiModel("Docker")),
-        source = "https://docs.docker.com/get-started/".toUri(),
-        createdAt = "18:10",
-        mood = Mood.Sad
     )
 )
