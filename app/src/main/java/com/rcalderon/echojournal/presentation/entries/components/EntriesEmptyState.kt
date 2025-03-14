@@ -1,4 +1,4 @@
-package com.rcalderon.echojournal.presentation.components
+package com.rcalderon.echojournal.presentation.entries.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rcalderon.echojournal.R
-import com.rcalderon.echojournal.presentation.components.image_vectors.EmptyEntries
+import com.rcalderon.echojournal.core.ui.general_components.image_vectors.EmptyEntries
 
 @Composable
 fun EntriesEmptyState(modifier: Modifier = Modifier) {

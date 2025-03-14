@@ -1,4 +1,4 @@
-package com.rcalderon.echojournal.presentation.components.image_vectors
+package com.rcalderon.echojournal.core.ui.general_components.image_vectors
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
