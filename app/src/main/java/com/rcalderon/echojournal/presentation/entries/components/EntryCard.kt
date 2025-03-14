@@ -1,6 +1,7 @@
-package com.rcalderon.echojournal.presentation.components
+package com.rcalderon.echojournal.presentation.entries.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,12 +19,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
@@ -41,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -59,27 +59,43 @@ import com.rcalderon.echojournal.presentation.enums.Mood
 import androidx.core.net.toUri
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun EntrieContent(
+fun EntryContent(
     entries: List<EntryUiModel> = emptyList()
 ) {
     LazyColumn {
-        itemsIndexed(_fakeEntries) { index, entryUiModel ->
-            EntrieContent(
-                entryUiModel = entryUiModel,
-                isFirstItem = index == 0,
-                isLastItem = index != 3,
-                isAudioOnPlayback = true,
-                onPlay = {}
-            )
-        }
+        // TODO Change by agrouping data
+        repeat(5) {
+            stickyHeader {
+                Text(
+                    text = "TODAY",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .padding(top = 12.dp, start = 10.dp)
+                        .fillMaxWidth()
 
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            itemsIndexed(_fakeEntries) { index, entryUiModel ->
+                EntryContent(
+                    entryUiModel = entryUiModel,
+                    isFirstItem = index == 0,
+                    isLastItem = index != 3,
+                    isAudioOnPlayback = true,
+                    onPlay = {}
+                )
+            }
+        }
     }
 }
 
 
 @Composable
-fun EntrieContent(
+fun EntryContent(
     entryUiModel: EntryUiModel,
     onPlay: () -> Unit,
     isFirstItem: Boolean,
@@ -87,33 +103,36 @@ fun EntrieContent(
     isAudioOnPlayback: Boolean = false,
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(space = 10.dp),
         modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentSize()
             .height(intrinsicSize = IntrinsicSize.Min)
-            .padding(horizontal = 5.dp),
+            .padding(horizontal = 5.dp)
     ) {
         Column(
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = if (isFirstItem) 10.dp else 0.dp)
         ) {
-            Image(
-                imageVector = entryUiModel.mood.img,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp)
-            )
-            if (isLastItem) VerticalDivider(
-                modifier = Modifier.fillMaxHeight()
-            )
+            Box (
+             contentAlignment = Alignment.TopCenter,
+            ){
+                if (isLastItem) {
+                    VerticalDivider(
+                        modifier = Modifier.fillMaxHeight()
+                    )
+                }
+                Image(
+                    imageVector = entryUiModel.mood.img,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
-
         EntryCard(
             entryUiModel = entryUiModel,
             isAudioOnPlayback = isAudioOnPlayback,
             onPlay = onPlay
         )
     }
-
 }
 
 @Composable
@@ -137,52 +156,14 @@ private fun EntryCard(
                 .padding(10.dp)
         ) {
             Text(text = entryUiModel.title, style = MaterialTheme.typography.bodyLarge)
-            Text(text = entryUiModel.createdAt, style = MaterialTheme.typography.labelLarge)
+            Text(text = entryUiModel.createdAt, style = MaterialTheme.typography.bodySmall)
         }
-        Box(
-            modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                ElevatedButton(
-                    onClick =  onPlay,
-                    shape = CircleShape,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .aspectRatio(1f, matchHeightConstraintsFirst = true),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Icon(
-                        painter = if(!isAudioOnPlayback) painterResource(R.drawable.ic_play)
-                        else painterResource(R.drawable.ic_pause),
-                        contentDescription = null,
-                        modifier = Modifier.size(34.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(2.dp))
-                LinearProgressIndicator(
-                    progress = {
-                        .50f
-                    },
-                    trackColor = Color.Gray,
-                    modifier = Modifier
-                        .padding(horizontal = 2.5.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .weight(1f)
 
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-                // TODO El estado de reporduccion debe verse aqui
-                Text(text = "7:05/12:30", style = MaterialTheme.typography.bodySmall)
-            }
-        }
+        AudioPlayer(
+            entryUiModel = entryUiModel,
+            isAudioOnPlayback = isAudioOnPlayback,
+            onPlay = onPlay
+        )
 
         if(entryUiModel.description != null) {
             Box(
@@ -210,7 +191,7 @@ private fun EntryCard(
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
+                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                     ) {
                         Text(
                             text = "# ${topic.topic}",
@@ -220,6 +201,59 @@ private fun EntryCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun AudioPlayer(
+    entryUiModel: EntryUiModel,
+    isAudioOnPlayback: Boolean = false,
+    onPlay: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 10.dp)
+            .clip(CircleShape)
+            .background(entryUiModel.mood.colors[1])
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(5.dp)
+        ) {
+            ElevatedButton(
+                onClick =  onPlay,
+                shape = CircleShape,
+                modifier = Modifier
+                    .size(32.dp)
+                    .aspectRatio(1f, matchHeightConstraintsFirst = true),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    painter = if(!isAudioOnPlayback) painterResource(R.drawable.ic_play)
+                    else painterResource(R.drawable.ic_pause),
+                    contentDescription = null,
+                    tint = entryUiModel.mood.colors[0]
+                )
+            }
+            Spacer(modifier = Modifier.width(2.dp))
+            LinearProgressIndicator(
+                progress = {
+                    .50f
+                },
+                color =  entryUiModel.mood.colors[0],
+                trackColor = entryUiModel.mood.colors[2],
+                modifier = Modifier
+                    .padding(horizontal = 2.5.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .weight(1f)
+
+            )
+            Spacer(modifier = Modifier.width(2.dp))
+            // TODO El estado de reporduccion debe verse aqui
+            Text(text = "7:05/12:30", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
